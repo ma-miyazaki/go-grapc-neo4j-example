@@ -23,3 +23,9 @@ docker-compose exec -d go go run server/main.go
 ```
 docker-compose exec go go run client/main.go
 ```
+
+# Neo4j
+
+```
+MATCH (p) RETURN p
+```
