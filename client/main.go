@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	pb "github.com/ma-miyazaki/go-grpc-example/pb/calc"
+	pb "github.com/ma-miyazaki/go-grpc-neo4j-example/pb/calc"
 
 	"google.golang.org/grpc"
 )
