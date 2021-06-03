@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "github.com/ma-miyazaki/go-grpc-neo4j-example/pb/employee";
+
+service EmployeeService {
+  rpc AddEmployee (AddEmployeeRequest) returns (Employee) {}
+  // rpc ListEmployees (ListEmployeesRequest) returns (ListEmployeesReply) {}
+}
+
+message Employee {
+  string id = 1;
+  string email = 2;
+  string lastName = 3;
+  string firstName = 4;
+}
+
+message AddEmployeeRequest {
+  string email = 1;
+  string lastName = 2;
+  string firstName = 3;
+}
+
+// message ListEmployeesRequest {
+//   // int32 a = 1;
+//   // int32 b = 2;
+// }
+
+// message ListEmployeesReply {
+//   repeated Employee employees = 1;
+// }
