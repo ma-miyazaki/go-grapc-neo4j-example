@@ -8,16 +8,13 @@ import (
 	"github.com/pkg/errors"
 
 	pb "github.com/ma-miyazaki/go-grpc-neo4j-example/pb/calc"
+	"github.com/ma-miyazaki/go-grpc-neo4j-example/pb/employee"
 
 	"google.golang.org/grpc"
 )
 
-func request(client pb.CalcClient, a, b int32) error {
-	ctx, cancel := context.WithTimeout(
-		context.Background(),
-		time.Second,
-	)
-	defer cancel()
+func requestSum(ctx context.Context, conn *grpc.ClientConn, a, b int32) error {
+	client := pb.NewCalcClient(conn)
 	sumRequest := pb.SumRequest{
 		A: a,
 		B: b,
@@ -31,6 +28,41 @@ func request(client pb.CalcClient, a, b int32) error {
 }
 
 func sum(a, b int32) error {
+	return doWithConnection(func(conn *grpc.ClientConn) error {
+		return doInTimeout(func(ctx context.Context) error {
+			return requestSum(ctx, conn, a, b)
+		})
+	})
+}
+
+func requestAddEmployee(ctx context.Context, conn *grpc.ClientConn) error {
+	client := employee.NewEmployeeServiceClient(conn)
+	reply, err := client.AddEmployee(ctx, &employee.AddEmployeeRequest{})
+	if err != nil {
+		return errors.Wrap(err, "受取り失敗")
+	}
+	log.Printf("サーバからの受け取り\n %s, %s, %s, %s", reply.Id, reply.Email, reply.LastName, reply.FirstName)
+	return nil
+}
+
+func addEmployee() error {
+	return doWithConnection(func(conn *grpc.ClientConn) error {
+		return doInTimeout(func(ctx context.Context) error {
+			return requestAddEmployee(ctx, conn)
+		})
+	})
+}
+
+func doInTimeout(fx func(context.Context) error) error {
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		time.Second,
+	)
+	defer cancel()
+	return fx(ctx)
+}
+
+func doWithConnection(fx func(*grpc.ClientConn) error) error {
 	address := "localhost:50051"
 	conn, err := grpc.Dial(
 		address,
@@ -41,14 +73,16 @@ func sum(a, b int32) error {
 		return errors.Wrap(err, "コネクションエラー")
 	}
 	defer conn.Close()
-	client := pb.NewCalcClient(conn)
-	return request(client, a, b)
+	return fx(conn)
 }
 
 func main() {
-	a := int32(300)
-	b := int32(500)
-	if err := sum(a, b); err != nil {
+	// a := int32(300)
+	// b := int32(500)
+	// if err := sum(a, b); err != nil {
+	// 	log.Fatalf("%v", err)
+	// }
+	if err := addEmployee(); err != nil {
 		log.Fatalf("%v", err)
 	}
 }
