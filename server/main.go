@@ -5,7 +5,9 @@ import (
 	"net"
 
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/pb/employee"
+	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/infrastracture/persistence"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/interface/handler"
+	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/usecase"
 
 	"google.golang.org/grpc"
 )
@@ -26,6 +28,12 @@ const port = ":50051"
 // 	}, nil
 // }
 
+func createEmployeeServer() employee.EmployeeServiceServer {
+	employeeRepository := persistence.NewEmployeeRepository()
+	employeeUseCase := usecase.NewEmployeeUseCase(employeeRepository)
+	return handler.NewEmployeeHandler(employeeUseCase)
+}
+
 func main() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
@@ -34,7 +42,9 @@ func main() {
 	}
 	s := grpc.NewServer()
 	// pb.RegisterCalcServer(s, &ServerUnary{})
-	employee.RegisterEmployeeServiceServer(s, handler.NewEmployeeHandler())
+	employee.RegisterEmployeeServiceServer(s, createEmployeeServer())
+
+	defer persistence.CloseNeo4jDriver()
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 		return

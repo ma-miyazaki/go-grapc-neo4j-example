@@ -35,20 +35,24 @@ func sum(a, b int32) error {
 	})
 }
 
-func requestAddEmployee(ctx context.Context, conn *grpc.ClientConn) error {
+func requestAddEmployee(ctx context.Context, conn *grpc.ClientConn, email, lastName, firstName string) error {
 	client := employee.NewEmployeeServiceClient(conn)
-	reply, err := client.AddEmployee(ctx, &employee.AddEmployeeRequest{})
+	reply, err := client.AddEmployee(ctx, &employee.AddEmployeeRequest{
+		Email:     email,
+		LastName:  lastName,
+		FirstName: firstName,
+	})
 	if err != nil {
 		return errors.Wrap(err, "受取り失敗")
 	}
-	log.Printf("サーバからの受け取り\n %s, %s, %s, %s", reply.Id, reply.Email, reply.LastName, reply.FirstName)
+	log.Printf("サーバからの受け取り\n %s", reply)
 	return nil
 }
 
-func addEmployee() error {
+func addEmployee(email, lastName, firstName string) error {
 	return doWithConnection(func(conn *grpc.ClientConn) error {
 		return doInTimeout(func(ctx context.Context) error {
-			return requestAddEmployee(ctx, conn)
+			return requestAddEmployee(ctx, conn, email, lastName, firstName)
 		})
 	})
 }
@@ -82,7 +86,7 @@ func main() {
 	// if err := sum(a, b); err != nil {
 	// 	log.Fatalf("%v", err)
 	// }
-	if err := addEmployee(); err != nil {
+	if err := addEmployee("test@example.com", "高嶺", "朋樹"); err != nil {
 		log.Fatalf("%v", err)
 	}
 }

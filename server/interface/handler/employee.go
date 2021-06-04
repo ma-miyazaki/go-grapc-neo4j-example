@@ -2,16 +2,14 @@ package handler
 
 import (
 	"context"
+	"log"
 
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/pb/employee"
+	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/usecase"
 )
 
 type mockEmployeeHandler struct {
 	employee.EmployeeServiceServer
-}
-
-func NewEmployeeHandler() employee.EmployeeServiceServer {
-	return &mockEmployeeHandler{}
 }
 
 func (mockEmployeeHandler) AddEmployee(context.Context, *employee.AddEmployeeRequest) (*employee.Employee, error) {
@@ -22,4 +20,28 @@ func (mockEmployeeHandler) AddEmployee(context.Context, *employee.AddEmployeeReq
 		FirstName: "太郎",
 	}
 	return employee, nil
+}
+
+type employeeHandler struct {
+	employee.EmployeeServiceServer
+	usecase usecase.EmployeeUseCase
+}
+
+func (handler employeeHandler) AddEmployee(_ context.Context, in *employee.AddEmployeeRequest) (*employee.Employee, error) {
+	log.Printf("サーバの受け取り\n %s", in.String())
+	em, err := handler.usecase.AddEmployee(in.Email, in.LastName, in.FirstName)
+	if err != nil {
+		return nil, err
+	}
+	return &employee.Employee{
+		Id:        em.ID.String(),
+		Email:     em.Email,
+		LastName:  em.LastName,
+		FirstName: em.FirstName,
+	}, nil
+}
+
+func NewEmployeeHandler(usecase usecase.EmployeeUseCase) employee.EmployeeServiceServer {
+	// return &mockEmployeeHandler{}
+	return &employeeHandler{usecase: usecase}
 }
