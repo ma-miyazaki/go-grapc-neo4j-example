@@ -44,10 +44,24 @@ func (handler employeeHandler) AddEmployee(_ context.Context, in *employee.AddEm
 
 func (handler employeeHandler) ListEmployees(context.Context, *empty.Empty) (*employee.ListEmployeesReply, error) {
 	log.Info().Msg("Recieved a list emplopyees request")
-	return nil, nil
+	employees, err := handler.usecase.ListEmployees()
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]*employee.Employee, len(employees))
+	for _, em := range employees {
+		list = append(list, &employee.Employee{
+			Id:        em.ID.String(),
+			Email:     em.Email,
+			LastName:  em.LastName,
+			FirstName: em.FirstName,
+		})
+	}
+	return &employee.ListEmployeesReply{Employees: list}, nil
 }
 
 func NewEmployeeHandler(usecase usecase.EmployeeUseCase) employee.EmployeeServiceServer {
-	// return &mockEmployeeHandler{}
-	return &employeeHandler{usecase: usecase}
+	// return mockEmployeeHandler{}
+	return employeeHandler{usecase: usecase}
 }

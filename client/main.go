@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/pb/employee"
 	"github.com/rs/zerolog/log"
 
@@ -34,6 +35,24 @@ func addEmployee(email, lastName, firstName string) error {
 	})
 }
 
+func requestListEmployees(ctx context.Context, conn *grpc.ClientConn) error {
+	client := employee.NewEmployeeServiceClient(conn)
+	reply, err := client.ListEmployees(ctx, &empty.Empty{})
+	if err != nil {
+		return errors.Wrap(err, "受取り失敗")
+	}
+	log.Info().Stringer("reply", reply).Msg("Reply list employees.")
+	return nil
+}
+
+func listEmployees() error {
+	return doWithConnection(func(conn *grpc.ClientConn) error {
+		return doInTimeout(func(ctx context.Context) error {
+			return requestListEmployees(ctx, conn)
+		})
+	})
+}
+
 func doInTimeout(fx func(context.Context) error) error {
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
@@ -58,7 +77,10 @@ func doWithConnection(fx func(*grpc.ClientConn) error) error {
 }
 
 func main() {
-	if err := addEmployee("test@example.com", "高嶺", "朋樹"); err != nil {
+	// if err := addEmployee("test@example.com", "高嶺", "朋樹"); err != nil {
+	// 	log.Fatal().Stack().Err(err).Msg("gRPC request error")
+	// }
+	if err := listEmployees(); err != nil {
 		log.Fatal().Stack().Err(err).Msg("gRPC request error")
 	}
 }

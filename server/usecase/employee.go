@@ -8,6 +8,7 @@ import (
 
 type EmployeeUseCase interface {
 	AddEmployee(email string, lastName string, firstName string) (*model.Employee, error)
+	ListEmployees() ([]model.Employee, error)
 }
 
 type employeeUseCase struct {
@@ -32,4 +33,8 @@ func (uc employeeUseCase) AddEmployee(email string, lastName string, firstName s
 
 	log.Info().Msgf("Employee created. [%v]", employee)
 	return employee, nil
+}
+
+func (uc employeeUseCase) ListEmployees() ([]model.Employee, error) {
+	return uc.repository.List()
 }
