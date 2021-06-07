@@ -1,9 +1,8 @@
 package persistence
 
 import (
-	"log"
-
 	"github.com/neo4j/neo4j-go-driver/neo4j"
+	"github.com/rs/zerolog/log"
 )
 
 var driver = newNeo4jDriver()
@@ -13,7 +12,7 @@ func newNeo4jDriver() neo4j.Driver {
 		config.Encrypted = false
 	})
 	if err != nil {
-		log.Fatalf("%v", err)
+		log.Fatal().Stack().Err(err).Msg("failed to open neo4j connection")
 		panic(err)
 	}
 	return driver

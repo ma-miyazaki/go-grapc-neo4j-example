@@ -2,10 +2,10 @@ package handler
 
 import (
 	"context"
-	"log"
 
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/pb/employee"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/usecase"
+	"github.com/rs/zerolog/log"
 )
 
 type mockEmployeeHandler struct {
@@ -28,7 +28,7 @@ type employeeHandler struct {
 }
 
 func (handler employeeHandler) AddEmployee(_ context.Context, in *employee.AddEmployeeRequest) (*employee.Employee, error) {
-	log.Printf("Recieved a create emplopyee request [%v]", in)
+	log.Info().Msgf("Recieved a create emplopyee request [%v]", in)
 	em, err := handler.usecase.AddEmployee(in.Email, in.LastName, in.FirstName)
 	if err != nil {
 		return nil, err

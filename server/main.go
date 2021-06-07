@@ -1,13 +1,14 @@
 package main
 
 import (
-	"log"
 	"net"
 
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/pb/employee"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/infrastracture/persistence"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/interface/handler"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/usecase"
+	// "github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"google.golang.org/grpc"
 )
@@ -37,7 +38,7 @@ func createEmployeeServer() employee.EmployeeServiceServer {
 func main() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatal().Stack().Err(err).Msg("failed to listen")
 		return
 	}
 	s := grpc.NewServer()
@@ -46,7 +47,7 @@ func main() {
 
 	defer persistence.CloseNeo4jDriver()
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		log.Fatal().Stack().Err(err).Msg("failed to serve")
 		return
 	}
 }
