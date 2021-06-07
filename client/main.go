@@ -23,7 +23,7 @@ func requestSum(ctx context.Context, conn *grpc.ClientConn, a, b int32) error {
 	if err != nil {
 		return errors.Wrap(err, "受取り失敗")
 	}
-	log.Printf("サーバからの受け取り\n %s", reply.GetMessage())
+	log.Printf("サーバからの受け取り [%s]", reply.GetMessage())
 	return nil
 }
 
@@ -45,7 +45,7 @@ func requestAddEmployee(ctx context.Context, conn *grpc.ClientConn, email, lastN
 	if err != nil {
 		return errors.Wrap(err, "受取り失敗")
 	}
-	log.Printf("サーバからの受け取り\n %s", reply)
+	log.Printf("サーバからの受け取り [%s]", reply)
 	return nil
 }
 

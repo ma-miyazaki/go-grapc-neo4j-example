@@ -28,7 +28,7 @@ type employeeHandler struct {
 }
 
 func (handler employeeHandler) AddEmployee(_ context.Context, in *employee.AddEmployeeRequest) (*employee.Employee, error) {
-	log.Printf("サーバの受け取り [%v]", in)
+	log.Printf("Recieved a create emplopyee request [%v]", in)
 	em, err := handler.usecase.AddEmployee(in.Email, in.LastName, in.FirstName)
 	if err != nil {
 		return nil, err

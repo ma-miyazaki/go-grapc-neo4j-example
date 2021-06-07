@@ -15,8 +15,10 @@ docker-compose exec go protoc --proto_path=proto --go_out=pb/employee/ --go_opt=
 
 ## Run server
 
+NOTE: コンテナ起動時に自動で起動するので、手動で起動することは基本ない。
+
 ```
-docker-compose exec -d go go run server/main.go
+docker-compose exec go air
 ```
 
 ## Run client

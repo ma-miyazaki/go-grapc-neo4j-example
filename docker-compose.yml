@@ -5,7 +5,10 @@ services:
     container_name: go
     volumes:
       - .:/app
-    tty: true
+    entrypoint:
+      - air
+      - -c
+      - .air.toml
   neo4j:
     image: neo4j:4.2.6
     container_name: neo4j
