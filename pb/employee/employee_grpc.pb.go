@@ -4,6 +4,7 @@ package employee
 
 import (
 	context "context"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -19,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EmployeeServiceClient interface {
 	AddEmployee(ctx context.Context, in *AddEmployeeRequest, opts ...grpc.CallOption) (*Employee, error)
+	ListEmployees(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ListEmployeesReply, error)
 }
 
 type employeeServiceClient struct {
@@ -38,11 +40,21 @@ func (c *employeeServiceClient) AddEmployee(ctx context.Context, in *AddEmployee
 	return out, nil
 }
 
+func (c *employeeServiceClient) ListEmployees(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ListEmployeesReply, error) {
+	out := new(ListEmployeesReply)
+	err := c.cc.Invoke(ctx, "/EmployeeService/ListEmployees", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EmployeeServiceServer is the server API for EmployeeService service.
 // All implementations must embed UnimplementedEmployeeServiceServer
 // for forward compatibility
 type EmployeeServiceServer interface {
 	AddEmployee(context.Context, *AddEmployeeRequest) (*Employee, error)
+	ListEmployees(context.Context, *empty.Empty) (*ListEmployeesReply, error)
 	mustEmbedUnimplementedEmployeeServiceServer()
 }
 
@@ -52,6 +64,9 @@ type UnimplementedEmployeeServiceServer struct {
 
 func (UnimplementedEmployeeServiceServer) AddEmployee(context.Context, *AddEmployeeRequest) (*Employee, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddEmployee not implemented")
+}
+func (UnimplementedEmployeeServiceServer) ListEmployees(context.Context, *empty.Empty) (*ListEmployeesReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListEmployees not implemented")
 }
 func (UnimplementedEmployeeServiceServer) mustEmbedUnimplementedEmployeeServiceServer() {}
 
@@ -84,6 +99,24 @@ func _EmployeeService_AddEmployee_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EmployeeService_ListEmployees_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EmployeeServiceServer).ListEmployees(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/EmployeeService/ListEmployees",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EmployeeServiceServer).ListEmployees(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EmployeeService_ServiceDesc is the grpc.ServiceDesc for EmployeeService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -94,6 +127,10 @@ var EmployeeService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddEmployee",
 			Handler:    _EmployeeService_AddEmployee_Handler,
+		},
+		{
+			MethodName: "ListEmployees",
+			Handler:    _EmployeeService_ListEmployees_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

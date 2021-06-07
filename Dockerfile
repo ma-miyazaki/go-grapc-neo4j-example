@@ -2,7 +2,7 @@ FROM golang:1.16.4-alpine3.13
 
 # install protobuf
 RUN apk update \
-  && apk add --no-cache git protoc
+  && apk add --no-cache git protoc protobuf-dev
 
 # install protoc and gRPC
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26.0 \

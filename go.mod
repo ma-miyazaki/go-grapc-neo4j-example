@@ -3,6 +3,7 @@ module github.com/ma-miyazaki/go-grpc-neo4j-example
 go 1.16
 
 require (
+	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.2.0
 	github.com/neo4j/neo4j-go-driver v1.8.3
 	github.com/pkg/errors v0.9.1

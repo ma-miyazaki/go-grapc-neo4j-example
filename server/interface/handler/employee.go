@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/pb/employee"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/usecase"
 	"github.com/rs/zerolog/log"
@@ -39,6 +40,11 @@ func (handler employeeHandler) AddEmployee(_ context.Context, in *employee.AddEm
 		LastName:  em.LastName,
 		FirstName: em.FirstName,
 	}, nil
+}
+
+func (handler employeeHandler) ListEmployees(context.Context, *empty.Empty) (*employee.ListEmployeesReply, error) {
+	log.Info().Msg("Recieved a list emplopyees request")
+	return nil, nil
 }
 
 func NewEmployeeHandler(usecase usecase.EmployeeUseCase) employee.EmployeeServiceServer {
