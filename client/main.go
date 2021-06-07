@@ -60,7 +60,7 @@ func addEmployee(email, lastName, firstName string) error {
 func doInTimeout(fx func(context.Context) error) error {
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
-		time.Second,
+		(10 * time.Second),
 	)
 	defer cancel()
 	return fx(ctx)

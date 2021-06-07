@@ -29,6 +29,26 @@ docker-compose exec go go run client/main.go
 
 http://localhost:7474/
 
+## 全グラフの表示
 ```
 MATCH (p) RETURN p
+```
+
+## 全グラフの削除
+```
+MATCH (n) DETACH DELETE n
+```
+
+## ユニーク制約
+
+ユニーク制約をかけるとインデックスも作成される
+
+```
+CREATE CONSTRAINT ON (n:Person) ASSERT n.uuid IS UNIQUE
+CREATE CONSTRAINT ON (n:Person) ASSERT n.email IS UNIQUE
+```
+
+## インデックスの作成
+```
+CREATE INDEX FOR (n:Person) ON (n.lastName, n.firstName)
 ```

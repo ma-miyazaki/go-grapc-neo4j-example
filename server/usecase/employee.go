@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"log"
+
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/domain/model"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/domain/repository"
 )
@@ -17,10 +19,17 @@ func NewEmployeeUseCase(repository repository.EmployeeRepository) EmployeeUseCas
 	return employeeUseCase{repository}
 }
 
-func (employeeUseCase) AddEmployee(email string, lastName string, firstName string) (*model.Employee, error) {
+func (uc employeeUseCase) AddEmployee(email string, lastName string, firstName string) (*model.Employee, error) {
 	employee, err := model.NewEmployee(email, lastName, firstName)
 	if err != nil {
 		return nil, err
 	}
+
+	if err := uc.repository.Create(employee); err != nil {
+		log.Fatalf("%v", err)
+		return nil, err
+	}
+
+	log.Printf("Employee created. [%v]", employee)
 	return employee, nil
 }

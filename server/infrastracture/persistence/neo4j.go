@@ -19,10 +19,6 @@ func newNeo4jDriver() neo4j.Driver {
 	return driver
 }
 
-// func GetNeo4jDriver() neo4j.Driver {
-// 	return driver
-// }
-
 func CloseNeo4jDriver() {
 	driver.Close()
 }

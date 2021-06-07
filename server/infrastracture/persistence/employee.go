@@ -12,15 +12,24 @@ func NewEmployeeRepository() repository.EmployeeRepository {
 	return &neo4jEmployeeRepository{}
 }
 
-func (repository neo4jEmployeeRepository) Create(employee *model.Employee) error {
-	var query = ""
-	var params = map[string]interface{}{}
+const createEmployeeQuery = "CREATE (:Person {uuid: $uuid, email: $email, lastName: $lastName, firstName: $firstName})"
 
+func createEmployeeParams(employee *model.Employee) map[string]interface{} {
+	return map[string]interface{}{
+		"uuid":      employee.ID.String(),
+		"email":     employee.Email,
+		"lastName":  employee.LastName,
+		"firstName": employee.FirstName,
+	}
+}
+
+func (repository neo4jEmployeeRepository) Create(employee *model.Employee) error {
 	session, err := NewNeo4jSession()
 	if err != nil {
 		return err
 	}
-	result, err := session.Run(query, params)
+
+	result, err := session.Run(createEmployeeQuery, createEmployeeParams(employee))
 	if err != nil {
 		return err
 	}
