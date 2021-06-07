@@ -1,9 +1,9 @@
 package persistence
 
 import (
+	"github.com/google/uuid"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/domain/model"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/domain/repository"
-	"github.com/rs/zerolog/log"
 )
 
 type neo4jEmployeeRepository struct {
@@ -14,7 +14,7 @@ func NewEmployeeRepository() repository.EmployeeRepository {
 }
 
 const createEmployeeQuery = "CREATE (:Person {uuid: $uuid, email: $email, lastName: $lastName, firstName: $firstName})"
-const listEmployeeQuery = "MATCH (p:Person) RETURN p"
+const listEmployeeQuery = "MATCH (p:Person) RETURN p.uuid, p.email, p.lastName, p.firstName"
 
 func createEmployeeParams(employee *model.Employee) map[string]interface{} {
 	return map[string]interface{}{
@@ -26,35 +26,34 @@ func createEmployeeParams(employee *model.Employee) map[string]interface{} {
 }
 
 func (repository neo4jEmployeeRepository) Create(employee *model.Employee) error {
-	session, err := NewNeo4jSession()
-	if err != nil {
-		return err
-	}
-
-	result, err := session.Run(createEmployeeQuery, createEmployeeParams(employee))
+	result, err := NewNeo4jSession().Run(createEmployeeQuery, createEmployeeParams(employee))
 	if err != nil {
 		return err
 	}
 	return result.Err()
 }
 
-func (repository neo4jEmployeeRepository) List() ([]model.Employee, error) {
-	session, err := NewNeo4jSession()
-	if err != nil {
-		return nil, err
-	}
-
-	result, err := session.Run(listEmployeeQuery, nil)
+func (repository neo4jEmployeeRepository) List() ([]*model.Employee, error) {
+	result, err := NewNeo4jSession().Run(listEmployeeQuery, nil)
 	if err != nil {
 		return nil, err
 	}
 	if err := result.Err(); err != nil {
 		return nil, err
 	}
+
+	var employees []*model.Employee
 	for result.Next() {
-		node, _ := result.Record().Get("p")
-		log.Info().Msgf("List employees. %v", node)
+		record := result.Record()
+		id := uuid.MustParse(record.Values[0].(string))
+		employee := &model.Employee{
+			ID:        model.EmployeeID{id},
+			Email:     record.Values[1].(string),
+			LastName:  record.Values[2].(string),
+			FirstName: record.Values[3].(string),
+		}
+		employees = append(employees, employee)
 	}
 
-	return []model.Employee{}, nil
+	return employees, nil
 }

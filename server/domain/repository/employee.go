@@ -6,5 +6,5 @@ import (
 
 type EmployeeRepository interface {
 	Create(employee *model.Employee) error
-	List() ([]model.Employee, error)
+	List() ([]*model.Employee, error)
 }
