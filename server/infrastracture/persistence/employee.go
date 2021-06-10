@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/domain/model"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/domain/repository"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 type neo4jEmployeeRepository struct {
@@ -35,7 +36,7 @@ func (repository *neo4jEmployeeRepository) Create(employee *model.Employee) erro
 }
 
 func (repository *neo4jEmployeeRepository) List() ([]*model.Employee, error) {
-	session := NewNeo4jSession()
+	session := neo4jDriver.NewSession(neo4j.SessionConfig{})
 	defer session.Close()
 
 	result, err := session.Run(listEmployeeQuery, nil)
