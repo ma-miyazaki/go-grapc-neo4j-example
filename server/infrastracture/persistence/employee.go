@@ -28,37 +28,29 @@ func createEmployeeParams(employee *model.Employee) map[string]interface{} {
 }
 
 func (repository *neo4jEmployeeRepository) Create(employee *model.Employee) error {
-	result, err := repository.transaction.Run(createEmployeeQuery, createEmployeeParams(employee))
-	if err != nil {
-		return err
-	}
-	return result.Err()
+	_, err := repository.run(createEmployeeQuery, createEmployeeParams(employee), func(result neo4j.Result) (interface{}, error) { return nil, nil })
+	return err
 }
 
 func (repository *neo4jEmployeeRepository) List() ([]*model.Employee, error) {
-	session := neo4jDriver.NewSession(neo4j.SessionConfig{})
-	defer session.Close()
+	result, err := repository.run(listEmployeeQuery, nil, func(result neo4j.Result) (interface{}, error) {
+		var employees []*model.Employee
+		for result.Next() {
+			record := result.Record()
+			id := uuid.MustParse(record.Values[0].(string))
+			employee := &model.Employee{
+				ID:        model.EmployeeID{id},
+				Email:     record.Values[1].(string),
+				LastName:  record.Values[2].(string),
+				FirstName: record.Values[3].(string),
+			}
+			employees = append(employees, employee)
+		}
 
-	result, err := session.Run(listEmployeeQuery, nil)
+		return employees, nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	if err := result.Err(); err != nil {
-		return nil, err
-	}
-
-	var employees []*model.Employee
-	for result.Next() {
-		record := result.Record()
-		id := uuid.MustParse(record.Values[0].(string))
-		employee := &model.Employee{
-			ID:        model.EmployeeID{id},
-			Email:     record.Values[1].(string),
-			LastName:  record.Values[2].(string),
-			FirstName: record.Values[3].(string),
-		}
-		employees = append(employees, employee)
-	}
-
-	return employees, nil
+	return result.([]*model.Employee), nil
 }
