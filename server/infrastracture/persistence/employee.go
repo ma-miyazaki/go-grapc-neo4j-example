@@ -4,7 +4,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/domain/model"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/domain/repository"
-	"github.com/rs/zerolog/log"
 )
 
 type neo4jEmployeeRepository struct {
@@ -28,8 +27,7 @@ func createEmployeeParams(employee *model.Employee) map[string]interface{} {
 }
 
 func (repository *neo4jEmployeeRepository) Create(employee *model.Employee) error {
-	log.Info().Msgf("transaction: %p", &repository.Transaction)
-	result, err := repository.Transaction.Run(createEmployeeQuery, createEmployeeParams(employee))
+	result, err := repository.transaction.Run(createEmployeeQuery, createEmployeeParams(employee))
 	if err != nil {
 		return err
 	}

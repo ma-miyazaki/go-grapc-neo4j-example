@@ -19,26 +19,36 @@ func NewEmployeeUseCase(repository repository.EmployeeRepository) EmployeeUseCas
 	return employeeUseCase{repository}
 }
 
-func (uc employeeUseCase) AddEmployee(email string, lastName string, firstName string) (*model.Employee, error) {
-	defer uc.repository.Close()
-	if err := uc.repository.Begin(); err != nil {
-		return nil, err
-	}
+func (uc employeeUseCase) AddEmployee(email string, lastName string, firstName string) (employee *model.Employee, err error) {
+	uc.repository.DoInTransaction(func() error {
+		employee, err = model.NewEmployee(email, lastName, firstName)
+		if err != nil {
+			log.Fatal().Stack().Err(err).Msg("failed to create employee model")
+			return err
+		}
 
-	employee, err := model.NewEmployee(email, lastName, firstName)
-	if err != nil {
-		log.Fatal().Stack().Err(err).Msg("failed to create employee model")
-		return nil, err
-	}
+		if err = uc.repository.Create(employee); err != nil {
+			log.Fatal().Stack().Err(err).Msg("failed to store employee")
+			return err
+		}
 
-	if err := uc.repository.Create(employee); err != nil {
-		log.Fatal().Stack().Err(err).Msg("failed to store employee")
-		return nil, err
-	}
+		log.Info().Msgf("Employee created. [%v]", employee)
+		return nil
+	})
+	return
+	// employee, err := model.NewEmployee(email, lastName, firstName)
+	// if err != nil {
+	// 	log.Fatal().Stack().Err(err).Msg("failed to create employee model")
+	// 	return nil, err
+	// }
 
-	log.Info().Msgf("Employee created. [%v]", employee)
-	uc.repository.Commit()
-	return employee, nil
+	// if err := uc.repository.Create(employee); err != nil {
+	// 	log.Fatal().Stack().Err(err).Msg("failed to store employee")
+	// 	return nil, err
+	// }
+
+	// log.Info().Msgf("Employee created. [%v]", employee)
+	// return employee, nil
 }
 
 func (uc employeeUseCase) ListEmployees() ([]*model.Employee, error) {

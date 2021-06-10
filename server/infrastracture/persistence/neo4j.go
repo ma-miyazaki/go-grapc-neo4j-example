@@ -25,22 +25,23 @@ func NewNeo4jSession() neo4j.Session {
 }
 
 type neo4jRepository struct {
-	neo4j.Transaction
-	session neo4j.Session
+	transaction neo4j.Transaction
 }
 
-func (repository *neo4jRepository) Begin() (err error) {
-	repository.session = NewNeo4jSession()
-	repository.Transaction, err = repository.session.BeginTransaction()
-	log.Info().Msgf("transaction: %p", &repository.Transaction)
-	return err
-}
+func (repository *neo4jRepository) DoInTransaction(fx func() error) (err error) {
+	session := NewNeo4jSession()
+	defer session.Close()
+	repository.transaction, err = session.BeginTransaction()
+	if err != nil {
+		return
+	}
 
-func (repository *neo4jRepository) Close() {
-	if repository.Transaction != nil {
-		repository.Transaction.Close()
+	err = fx()
+	if err != nil {
+		repository.transaction.Rollback()
+		return
 	}
-	if repository.session != nil {
-		repository.session.Close()
-	}
+
+	repository.transaction.Commit()
+	return
 }
