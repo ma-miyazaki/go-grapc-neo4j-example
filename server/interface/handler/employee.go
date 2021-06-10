@@ -44,6 +44,8 @@ func (handler employeeHandler) AddEmployee(_ context.Context, in *employee.AddEm
 
 func (handler employeeHandler) ListEmployees(context.Context, *empty.Empty) (*employee.ListEmployeesReply, error) {
 	log.Info().Msg("Recieved a list emplopyees request")
+	log.Info().Msgf("handler: %p", &handler)
+	log.Info().Msgf("usecase: %p", &handler.usecase)
 	employees, err := handler.usecase.ListEmployees()
 	if err != nil {
 		return nil, err

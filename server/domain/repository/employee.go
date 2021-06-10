@@ -5,6 +5,7 @@ import (
 )
 
 type EmployeeRepository interface {
+	Repository
 	Create(employee *model.Employee) error
 	List() ([]*model.Employee, error)
 }

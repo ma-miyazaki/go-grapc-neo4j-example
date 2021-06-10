@@ -4,13 +4,15 @@ import (
 	"github.com/google/uuid"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/domain/model"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/domain/repository"
+	"github.com/rs/zerolog/log"
 )
 
 type neo4jEmployeeRepository struct {
+	neo4jRepository
 }
 
 func NewEmployeeRepository() repository.EmployeeRepository {
-	return neo4jEmployeeRepository{}
+	return &neo4jEmployeeRepository{}
 }
 
 const createEmployeeQuery = "CREATE (:Person {uuid: $uuid, email: $email, lastName: $lastName, firstName: $firstName})"
@@ -25,16 +27,20 @@ func createEmployeeParams(employee *model.Employee) map[string]interface{} {
 	}
 }
 
-func (repository neo4jEmployeeRepository) Create(employee *model.Employee) error {
-	result, err := NewNeo4jSession().Run(createEmployeeQuery, createEmployeeParams(employee))
+func (repository *neo4jEmployeeRepository) Create(employee *model.Employee) error {
+	log.Info().Msgf("transaction: %p", &repository.Transaction)
+	result, err := repository.Transaction.Run(createEmployeeQuery, createEmployeeParams(employee))
 	if err != nil {
 		return err
 	}
 	return result.Err()
 }
 
-func (repository neo4jEmployeeRepository) List() ([]*model.Employee, error) {
-	result, err := NewNeo4jSession().Run(listEmployeeQuery, nil)
+func (repository *neo4jEmployeeRepository) List() ([]*model.Employee, error) {
+	session := NewNeo4jSession()
+	defer session.Close()
+
+	result, err := session.Run(listEmployeeQuery, nil)
 	if err != nil {
 		return nil, err
 	}

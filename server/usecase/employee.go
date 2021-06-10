@@ -20,6 +20,11 @@ func NewEmployeeUseCase(repository repository.EmployeeRepository) EmployeeUseCas
 }
 
 func (uc employeeUseCase) AddEmployee(email string, lastName string, firstName string) (*model.Employee, error) {
+	defer uc.repository.Close()
+	if err := uc.repository.Begin(); err != nil {
+		return nil, err
+	}
+
 	employee, err := model.NewEmployee(email, lastName, firstName)
 	if err != nil {
 		log.Fatal().Stack().Err(err).Msg("failed to create employee model")
@@ -32,9 +37,11 @@ func (uc employeeUseCase) AddEmployee(email string, lastName string, firstName s
 	}
 
 	log.Info().Msgf("Employee created. [%v]", employee)
+	uc.repository.Commit()
 	return employee, nil
 }
 
 func (uc employeeUseCase) ListEmployees() ([]*model.Employee, error) {
+	log.Info().Msgf("repository: %p", &uc.repository)
 	return uc.repository.List()
 }

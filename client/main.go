@@ -77,9 +77,9 @@ func doWithConnection(fx func(*grpc.ClientConn) error) error {
 }
 
 func main() {
-	// if err := addEmployee("test@example.com", "高嶺", "朋樹"); err != nil {
-	// 	log.Fatal().Stack().Err(err).Msg("gRPC request error")
-	// }
+	if err := addEmployee("test@example.com", "高嶺", "朋樹"); err != nil {
+		log.Fatal().Stack().Err(err).Msg("gRPC request error")
+	}
 	if err := listEmployees(); err != nil {
 		log.Fatal().Stack().Err(err).Msg("gRPC request error")
 	}

@@ -1,7 +1,6 @@
 package persistence
 
 import (
-	// "github.com/neo4j/neo4j-go-driver/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/rs/zerolog/log"
 )
@@ -23,4 +22,25 @@ func CloseNeo4jDriver() {
 
 func NewNeo4jSession() neo4j.Session {
 	return driver.NewSession(neo4j.SessionConfig{})
+}
+
+type neo4jRepository struct {
+	neo4j.Transaction
+	session neo4j.Session
+}
+
+func (repository *neo4jRepository) Begin() (err error) {
+	repository.session = NewNeo4jSession()
+	repository.Transaction, err = repository.session.BeginTransaction()
+	log.Info().Msgf("transaction: %p", &repository.Transaction)
+	return err
+}
+
+func (repository *neo4jRepository) Close() {
+	if repository.Transaction != nil {
+		repository.Transaction.Close()
+	}
+	if repository.session != nil {
+		repository.session.Close()
+	}
 }
