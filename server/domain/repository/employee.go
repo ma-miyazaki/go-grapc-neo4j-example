@@ -8,4 +8,5 @@ type EmployeeRepository interface {
 	Repository
 	Create(employee *model.Employee) error
 	List() ([]*model.Employee, error)
+	FindByEmail(email string) (*model.Employee, error)
 }

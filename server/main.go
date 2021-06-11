@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/pb/employee"
+	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/domain/service"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/infrastracture/persistence"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/interface/handler"
 	"github.com/ma-miyazaki/go-grpc-neo4j-example/server/usecase"
@@ -15,9 +16,10 @@ import (
 const port = ":50051"
 
 func createEmployeeServer() employee.EmployeeServiceServer {
-	employeeRepository := persistence.NewEmployeeRepository()
-	employeeUseCase := usecase.NewEmployeeUseCase(employeeRepository)
-	return handler.NewEmployeeHandler(employeeUseCase)
+	repository := persistence.NewEmployeeRepository()
+	service := service.NewEmployeeService(repository)
+	useCase := usecase.NewEmployeeUseCase(repository, service)
+	return handler.NewEmployeeHandler(useCase)
 }
 
 func main() {

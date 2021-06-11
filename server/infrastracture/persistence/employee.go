@@ -17,6 +17,7 @@ func NewEmployeeRepository() repository.EmployeeRepository {
 
 const createEmployeeQuery = "CREATE (:Person {uuid: $uuid, email: $email, lastName: $lastName, firstName: $firstName})"
 const listEmployeeQuery = "MATCH (p:Person) RETURN p.uuid, p.email, p.lastName, p.firstName"
+const findEmployeeByEmailQuery = "MATCH (p:Person) WHERE p.email = $email RETURN p.uuid, p.email, p.lastName, p.firstName LIMIT 1"
 
 func createEmployeeParams(employee *model.Employee) map[string]interface{} {
 	return map[string]interface{}{
@@ -53,4 +54,24 @@ func (repository *neo4jEmployeeRepository) List() ([]*model.Employee, error) {
 		return nil, err
 	}
 	return result.([]*model.Employee), nil
+}
+
+func (repository *neo4jEmployeeRepository) FindByEmail(email string) (*model.Employee, error) {
+	result, err := repository.run(findEmployeeByEmailQuery, map[string]interface{}{"email": email}, func(result neo4j.Result) (interface{}, error) {
+		record, err := result.Single()
+		if err != nil {
+			return nil, err
+		}
+		id := uuid.MustParse(record.Values[0].(string))
+		return &model.Employee{
+			ID:        model.EmployeeID{id},
+			Email:     record.Values[1].(string),
+			LastName:  record.Values[2].(string),
+			FirstName: record.Values[3].(string),
+		}, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*model.Employee), nil
 }
